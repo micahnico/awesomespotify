@@ -57,3 +57,7 @@ declare module '*.png' {
 }
 
 /* CUSTOM: ADD YOUR OWN HERE */
+declare module '*.svelte' {
+  const value: any;
+  export = value;
+}

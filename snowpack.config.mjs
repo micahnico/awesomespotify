@@ -1,3 +1,21 @@
+import proxy from 'http2-proxy'
+import finalhandler from 'finalhandler'
+
+const defaultWebHandler = (err, req, res) => {
+  if (err) {
+    console.error('proxy error', err)
+    finalhandler(req, res)(err)
+  }
+}
+
+const proxyHandler = (req, res) => {
+  const host = req.headers.host.replace(/:\d+/, "")
+  return proxy.web(req, res, {
+    hostname: host,
+    port: 8081
+  }, defaultWebHandler)
+}
+
 /** @type {import("snowpack").SnowpackUserConfig } */
 export default {
   mount: {
@@ -16,8 +34,10 @@ export default {
     ],
   ],
   routes: [
-    /* Enable an SPA Fallback in development: */
-    // {"match": "routes", "src": ".*", "dest": "/index.html"},
+    {
+      src: '/api/.*',
+      dest: proxyHandler
+    }
   ],
   optimize: {
     /* Example: Bundle your final build: */
