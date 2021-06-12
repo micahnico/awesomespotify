@@ -6,10 +6,10 @@
   const client: any = getContext('client')
 
   onMount(async () => {
-    const response = await $client.get(`/api/test`)
-    if (response.ok) {
-      console.log(response.body)
-    }
+    // const response = await $client.get(`/api/test`)
+    // if (response.ok) {
+    //   console.log(response.body)
+    // }
   })
 
 </script>
