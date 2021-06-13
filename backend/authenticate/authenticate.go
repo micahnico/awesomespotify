@@ -19,7 +19,7 @@ var (
 var auth spotify.Authenticator
 
 func ConnectAccount(redirectURI string, clientID string, secretKey string) (*spotify.Client, error) {
-	auth = spotify.NewAuthenticator(redirectURI, spotify.ScopePlaylistReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistModifyPublic, spotify.ScopePlaylistReadCollaborative, spotify.ScopeUserTopRead, spotify.ScopeUserLibraryRead, spotify.ScopeUserFollowRead, spotify.ScopeUserLibraryRead)
+	auth = spotify.NewAuthenticator(redirectURI, spotify.ScopePlaylistReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistModifyPublic, spotify.ScopePlaylistReadCollaborative, spotify.ScopeUserTopRead, spotify.ScopeUserLibraryRead, spotify.ScopeUserFollowRead, spotify.ScopeUserLibraryRead, spotify.ScopeUserReadCurrentlyPlaying)
 	auth.SetAuthInfo(clientID, secretKey)
 	url := auth.AuthURL(state)
 	openBrowser(url)

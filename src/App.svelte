@@ -14,6 +14,17 @@
     '*': wrap({asyncComponent: () => import('./pages/not_found.svelte')}),
   }
 
+  let loading: boolean = true
+
+  onMount(async () => {
+    const response = await $client.get(`/api/login`)
+    if (response.ok) {
+      loading = false
+    } else {
+      console.log("Could not connect Spotify account")
+    }
+  })
+
 </script>
 
 <style global lang="postcss">
@@ -22,6 +33,8 @@
   @tailwind utilities;
 </style>
 
-<div class="pseudo-body">
-  <Router {routes} />
-</div>
+{#if !loading}
+  <div class="pseudo-body">
+    <Router {routes} />
+  </div>
+{/if}
