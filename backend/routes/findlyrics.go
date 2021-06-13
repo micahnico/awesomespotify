@@ -2,9 +2,11 @@ package routes
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	"regexp"
+	"os"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -41,8 +43,38 @@ func FindLyrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func search(ctx context.Context, artist string, song string) (string, error) {
-	url := fmt.Sprintf("https://genius.com/%v-%v-lyrics", formatURL(artist), formatURL(song))
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.genius.com/search?q=%v", formatURL(artist, song)), nil)
+	if err != nil {
+		return "", err
+	}
 
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", os.Getenv("API_ACCESS_TOKEN")))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	var body map[string]interface{}
+	err = json.NewDecoder(res.Body).Decode(&body)
+	if err != nil {
+		return "", err
+	}
+
+	hits := body["response"].(map[string]interface{})["hits"].([]interface{})
+	if len(hits) == 0 {
+		return "", errors.New("No lyrics found")
+	}
+	url := hits[0].(map[string]interface{})["result"].(map[string]interface{})["url"].(string)
+	html, err := scrape(ctx, url)
+	if err != nil {
+		return "", err
+	}
+
+	return html, nil
+}
+
+func scrape(ctx context.Context, url string) (string, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return "", err
@@ -70,20 +102,10 @@ func search(ctx context.Context, artist string, song string) (string, error) {
 	return html, nil
 }
 
-func formatURL(x string) string {
-	reg := regexp.MustCompile(`(feat.\s[a-zA-Z0-9_,&\s]*)`)
-	featMatch := reg.FindStringSubmatch(x)
-
-	str := x
-	if featMatch != nil {
-		str = strings.Replace(x, featMatch[1], "", -1)
-	}
-	str = strings.Replace(str, "(", "", -1)
-	str = strings.Replace(str, ")", "", -1)
+func formatURL(x string, y string) string {
+	str := x + " " + y
 	str = strings.TrimSpace(str)
-	str = strings.Replace(str, " - ", " ", -1)
-	str = strings.Replace(str, " ", "-", -1)
+	str = strings.Replace(str, " ", "%20", -1)
 	str = strings.Replace(str, "'", "", -1)
-	str = strings.Replace(str, "&", "and", -1)
 	return str
 }
