@@ -13,32 +13,39 @@ import (
 	"github.com/go-chi/render"
 	"github.com/jackc/sadpath"
 	"github.com/micahnico/awesomespotify/backend/current"
+	"github.com/zmb3/spotify"
 )
 
 type findLyricsResponse struct {
-	Artist string
-	Song   string
-	Lyrics string
+	Artists  []string
+	Song     string
+	Lyrics   string
+	ImageURL string
+	Error    string
 }
 
 func FindLyrics(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	spotifyClient := current.SpotifyClient(ctx)
 
-	currenlyPlayingInfo, err := spotifyClient.PlayerCurrentlyPlaying()
+	currentlyPlayingInfo, err := spotifyClient.PlayerCurrentlyPlaying()
 	sadpath.Check(err)
 
-	var currentArtist string
-	var currentSong string
-	if currenlyPlayingInfo != nil {
-		currentArtist = currenlyPlayingInfo.Item.Artists[0].Name
-		currentSong = currenlyPlayingInfo.Item.Name
+	if !currentlyPlayingInfo.Playing {
+		result := findLyricsResponse{Error: "No currently playing song"}
+		render.JSON(w, r, result)
+		return
 	}
 
-	lyrics, err := search(ctx, currentArtist, currentSong)
+	searchArtist := currentlyPlayingInfo.Item.Artists[0].Name // searching for the first/main artist should give the right result
+	currentArtists := getArtistNames(currentlyPlayingInfo.Item.Artists)
+	currentSong := currentlyPlayingInfo.Item.Name
+	albumImageURL := currentlyPlayingInfo.Item.Album.Images[1].URL // get the one that is 300x300
+
+	lyrics, err := search(ctx, searchArtist, currentSong)
 	sadpath.Check(err)
 
-	result := findLyricsResponse{Artist: currentArtist, Song: currentSong, Lyrics: lyrics}
+	result := findLyricsResponse{Artists: currentArtists, Song: currentSong, Lyrics: lyrics, ImageURL: albumImageURL}
 	render.JSON(w, r, result)
 }
 
@@ -108,4 +115,12 @@ func formatURL(x string, y string) string {
 	str = strings.Replace(str, " ", "%20", -1)
 	str = strings.Replace(str, "'", "", -1)
 	return str
+}
+
+func getArtistNames(artists []spotify.SimpleArtist) []string {
+	var names []string
+	for _, artist := range artists {
+		names = append(names, artist.Name)
+	}
+	return names
 }

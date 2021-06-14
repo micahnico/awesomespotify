@@ -5,9 +5,11 @@
 
   const client: any = getContext('client')
 
-  let artist: string
+  let artists: string
   let song: string
   let lyrics: string
+  let imageUrl: string
+  let findLyricsError: string
 
   let user: any
   let loading: boolean = true
@@ -21,9 +23,11 @@
     if (user) {
       const lyricResponse = await $client.get(`/api/lyrics/find`)
       if (lyricResponse.ok) {
-        artist = lyricResponse.body.Artist
+        artists = lyricResponse.body.Artists
         song = lyricResponse.body.Song
         lyrics = lyricResponse.body.Lyrics
+        imageUrl = lyricResponse.body.ImageURL
+        findLyricsError = lyricResponse.body.Error
       }
     }
 
@@ -38,20 +42,47 @@
   }
 </script>
 
+<style>
+  .custom-img-size {
+    height: 150px;
+    width: 150px;
+  }
+
+  @media (min-width: 1280px) {
+  .custom-img-size {
+    height: 200px;
+    width: 200px;
+  }
+}
+</style>
+
 <Header/>
 
 <div class="w-full flex justify-center p-5 bg-gray-100">
-  <div class='px-16 py-10 w-full lg:w-1/2 bg-white rounded-md shadow-lg'>
+  <div class='px-16 py-10 w-full lg:w-3/4 xl:w-3/5 2xl:w-1/2 bg-white rounded-md shadow-lg'>
     {#if loading}
       <p class='text-xl font-bold mb-1'>Finding Lyrics...</p>
     {:else}
       {#if user}
-        <p class='text-5xl font-bold mb-1'>{song}</p>
-        <p class='text-2xl text-gray-600 mb-5'>{artist}</p>
-        {@html lyrics}
-        {#if lyrics}
-          <hr class="my-5">
-          <p>These lyrics were taken from <a href="https://genius.com" class="text-blue-500 hover:text-blue-700">genius.com</a></p>
+        {#if !findLyricsError}
+          <div class="flex items-center mb-7">
+            <img src={imageUrl} alt="" class="border mb-3 custom-img-size">
+            <div class="ml-5">
+              <p class='text-2xl sm:text-3xl md:text-4xl 2xl:text-5xl font-bold mb-1'>{song}</p>
+              <p class='text-xl md:text-2xl text-gray-500'>
+                {#each artists as artist, i}
+                  {#if i}, {/if}{artist}
+                {/each}
+              </p>
+            </div>
+          </div>
+          {#if lyrics}
+            {@html lyrics}
+            <hr class="my-5">
+            <p>These lyrics were taken from <a href="https://genius.com" class="text-blue-500 hover:text-blue-700">genius.com</a></p>
+          {/if}
+        {:else}
+          <p class='text-xl font-bold mb-1'>{findLyricsError}</p>
         {/if}
       {:else}
         <p class='text-3xl font-bold mb-1'>Lyrics</p>
