@@ -48,7 +48,7 @@ func search(ctx context.Context, artist string, song string) (string, error) {
 		return "", err
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", os.Getenv("API_ACCESS_TOKEN")))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", os.Getenv("GENIUS_API_ACCESS_TOKEN")))
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err

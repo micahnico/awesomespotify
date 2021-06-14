@@ -14,27 +14,35 @@
     '*': wrap({asyncComponent: () => import('./pages/not_found.svelte')}),
   }
 
-  let loading: boolean = true
-
-  onMount(async () => {
-    const response = await $client.get(`/api/login`)
-    if (response.ok) {
-      loading = false
-    } else {
-      console.log("Could not connect Spotify account")
-    }
-  })
-
 </script>
 
 <style global lang="postcss">
   @tailwind base;
   @tailwind components;
   @tailwind utilities;
+
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+  * {
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .link {
+    color: #1DB954;
+  }
+
+  .link:hover {
+    color: #199c47;
+  }
+
+  .bg-spotify-green {
+    background: #1DB954;
+  }
+
+  .bg-spotify-dark-green {
+    background: #199c47;
+  }
 </style>
 
-{#if !loading}
-  <div class="pseudo-body">
-    <Router {routes} />
-  </div>
-{/if}
+<div class="pseudo-body">
+  <Router {routes} />
+</div>

@@ -18,7 +18,6 @@ export default class Client {
 
       if (httpResponse.ok) {
         let body
-        console.log(httpResponse.headers.get('Content-Type') )
         if (httpResponse.headers.get('Content-Type') === 'application/json; charset=utf-8') {
           body = await httpResponse.json()
         } else {

@@ -1,11 +1,12 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/render"
-	"github.com/micahnico/awesomespotify/backend/current"
+	"github.com/jackc/sadpath"
+	"github.com/micahnico/awesomespotify/backend/authenticate"
 )
 
 type loginResponse struct {
@@ -13,14 +14,24 @@ type loginResponse struct {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	spotifyClient := current.SpotifyClient(ctx)
+	clientID := os.Getenv("CLIENT_ID")
+	clientSecret := os.Getenv("CLIENT_SECRET")
+	redirectURI := os.Getenv("REDIRECT_URI")
 
-	var resp loginResponse
-	if spotifyClient != nil {
-		resp = loginResponse{Err: nil}
-	} else {
-		resp = loginResponse{Err: fmt.Errorf("Could not connect account")}
-	}
-	render.JSON(w, r, resp)
+	client, err := authenticate.ConnectAccount(redirectURI, clientID, clientSecret)
+	sadpath.Check(err)
+
+	token, err := client.Token()
+	sadpath.Check(err)
+
+	// set cookies
+	accessTokenCookie := &http.Cookie{Name: "AccessToken", Value: token.AccessToken, HttpOnly: false, Expires: token.Expiry}
+	http.SetCookie(w, accessTokenCookie)
+	refreshTokenCookie := &http.Cookie{Name: "RefreshToken", Value: token.RefreshToken, HttpOnly: false, Expires: token.Expiry}
+	http.SetCookie(w, refreshTokenCookie)
+	expiryToken := &http.Cookie{Name: "ExpiryToken", Value: token.Expiry.String(), HttpOnly: false, Expires: token.Expiry}
+	http.SetCookie(w, expiryToken)
+
+	// current.SetSpotifyClient(client)
+	render.JSON(w, r, loginResponse{Err: err})
 }

@@ -21,12 +21,12 @@ func WithSpotifyClient(ctx context.Context, client *spotify.Client) context.Cont
 	return context.WithValue(ctx, clientCtxKey, client)
 }
 
-// func SetClient(cl *spotify.Client) {
-// 	if cl != nil {
-// 		panic("cannot call SetClient twice")
-// 	}
-// 	if cl == nil {
-// 		panic("cl must not be nil")
-// 	}
-// 	client = cl
-// }
+func SetSpotifyClient(cl *spotify.Client) {
+	if client != nil {
+		panic("cannot call SetClient twice")
+	}
+	if cl == nil {
+		panic("cl must not be nil")
+	}
+	client = cl
+}

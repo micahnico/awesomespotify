@@ -5,13 +5,13 @@
 
   const client: any = getContext('client')
 
-  onMount(async () => {
-    const response = await $client.get(`/api/test`)
-    if (response.ok) {
-      console.log("on test page")
-      console.log(response.body)
-    }
-  })
+  // onMount(async () => {
+  //   const response = await $client.get(`/api/test`)
+  //   if (response.ok) {
+  //     console.log("on test page")
+  //     console.log(response.body)
+  //   }
+  // })
 </script>
 
 <Header/>

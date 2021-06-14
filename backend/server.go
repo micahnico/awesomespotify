@@ -9,6 +9,8 @@ import (
 	"github.com/micahnico/awesomespotify/backend/authenticate"
 	"github.com/micahnico/awesomespotify/backend/current"
 	"github.com/micahnico/awesomespotify/backend/routes"
+	"github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -24,8 +26,8 @@ func main() {
 	r.Use(loadSpotifyClientHandler())
 
 	r.Route("/api", func(r chi.Router) {
+		r.Get("/user/get", routes.GetUser)
 		r.Get("/login", routes.Login)
-		r.Get("/test", routes.TestRoute)
 		r.Get("/callback", authenticate.CompleteAuth)
 		r.Get("/lyrics/find", routes.FindLyrics)
 	})
@@ -34,36 +36,47 @@ func main() {
 	http.ListenAndServe(":8081", r)
 }
 
+// func loadSpotifyClientHandler() func(http.Handler) http.Handler {
+// 	return func(next http.Handler) http.Handler {
+// 		fn := func(w http.ResponseWriter, r *http.Request) {
+// 			ctx := r.Context()
+// 			ctx = current.WithSpotifyClient(ctx)
+// 			next.ServeHTTP(w, r.WithContext(ctx))
+// 		}
+// 		return http.HandlerFunc(fn)
+// 	}
+// }
+
 func loadSpotifyClientHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
-			if r.URL.Path == "/api/callback" {
-				next.ServeHTTP(w, r.WithContext(ctx))
-				return
+			expiry, err := r.Cookie("ExpiryToken")
+			if err == nil {
+				accessToken, _ := r.Cookie("AccessToken")
+				refreshToken, _ := r.Cookie("RefreshToken")
+
+				token := &oauth2.Token{
+					Expiry:       expiry.Expires,
+					TokenType:    "Bearer",
+					AccessToken:  accessToken.Value,
+					RefreshToken: refreshToken.Value,
+				}
+
+				clientID := os.Getenv("CLIENT_ID")
+				clientSecret := os.Getenv("CLIENT_SECRET")
+				redirectURI := os.Getenv("REDIRECT_URI")
+
+				auth := spotify.NewAuthenticator(redirectURI, spotify.ScopePlaylistReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistModifyPublic, spotify.ScopePlaylistReadCollaborative, spotify.ScopeUserTopRead, spotify.ScopeUserLibraryRead, spotify.ScopeUserFollowRead, spotify.ScopeUserLibraryRead, spotify.ScopeUserReadCurrentlyPlaying)
+				auth.SetAuthInfo(clientID, clientSecret)
+				client := auth.NewClient(token)
+
+				ctx = current.WithSpotifyClient(ctx, &client)
 			}
 
-			if current.SpotifyClient(ctx) != nil || r.URL.Path == "/api/login" {
-				ctx = current.WithSpotifyClient(ctx, current.SpotifyClient(ctx))
-				next.ServeHTTP(w, r.WithContext(ctx))
-				return
-			}
-
-			clientID := os.Getenv("CLIENT_ID")
-			clientSecret := os.Getenv("CLIENT_SECRET")
-			redirectURI := os.Getenv("REDIRECT_URI")
-
-			client, err := authenticate.ConnectAccount(redirectURI, clientID, clientSecret)
-			if err != nil {
-				log.Fatal("Could not connect account")
-				return
-			}
-
-			ctx = current.WithSpotifyClient(ctx, client)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
-
 		return http.HandlerFunc(fn)
 	}
 }
