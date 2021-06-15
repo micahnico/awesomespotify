@@ -44,18 +44,17 @@ func FindLyrics(w http.ResponseWriter, r *http.Request) {
 	currentArtists := getArtistNames(currentlyPlayingInfo.Item.Artists)
 	currentSong := currentlyPlayingInfo.Item.Name
 	albumImageURL := currentlyPlayingInfo.Item.Album.Images[1].URL // get the one that is 300x300
+	bgColorHex, err := getMainColorFromAlbumnCover(ctx, albumImageURL)
+	sadpath.Check(err)
 
 	lyrics, err := search(ctx, currentArtists, currentSong)
 	sadpath.Check(err)
 
 	if lyrics == "" {
-		result := findLyricsResponse{Error: "No lyrics found"}
+		result := findLyricsResponse{Artists: currentArtists, Song: currentSong, ImageURL: albumImageURL, BgHex: bgColorHex, Error: "No lyrics found"}
 		render.JSON(w, r, result)
 		return
 	}
-
-	bgColorHex, err := getMainColorFromAlbumnCover(ctx, albumImageURL)
-	sadpath.Check(err)
 
 	result := findLyricsResponse{Artists: currentArtists, Song: currentSong, Lyrics: lyrics, ImageURL: albumImageURL, BgHex: bgColorHex}
 	render.JSON(w, r, result)

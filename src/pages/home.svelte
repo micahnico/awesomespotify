@@ -73,27 +73,25 @@
       <p class='p-10 text-xl font-bold mb-1'>Finding Lyrics...</p>
     {:else}
       {#if user}
-        {#if !findLyricsError}
-          <div class="flex items-center p-10 rounded-t-md mb-7" style="background-color: {bgHex};">
-            <img src={imageUrl} alt="" class="border custom-img-size">
-            <div class="ml-5">
-              <p class='text-2xl sm:text-3xl md:text-4xl font-bold mb-1'>{song}</p>
-              <p class='text-xl md:text-2xl text-gray-500'>
-                {#each artists as artist, i}
-                  {#if i}, {/if}{artist}
-                {/each}
-              </p>
-            </div>
+        <div class="flex items-center p-10 rounded-t-md mb-7" style="background-color: {bgHex};">
+          <img src={imageUrl} alt="" class="border custom-img-size">
+          <div class="ml-5">
+            <p class='text-2xl sm:text-3xl md:text-4xl font-bold mb-1'>{song}</p>
+            <p class='text-xl md:text-2xl text-gray-500'>
+              {#each artists as artist, i}
+                {#if i}, {/if}{artist}
+              {/each}
+            </p>
           </div>
-          {#if lyrics}
-            <div class="pb-10 px-10">
-              {@html lyrics}
-              <hr class="my-5">
-              <p class="text-gray-500">These lyrics were taken from <a href="https://genius.com" class="text-blue-500 hover:text-blue-700">genius.com</a></p>
-            </div>
-          {/if}
+        </div>
+        {#if lyrics}
+          <div class="pb-10 px-10">
+            {@html lyrics}
+            <hr class="my-5">
+            <p class="text-gray-500">These lyrics were taken from <a href="https://genius.com" class="text-blue-500 hover:text-blue-700">genius.com</a></p>
+          </div>
         {:else}
-          <p class='p-10 text-xl font-bold mb-1'>{findLyricsError}</p>
+          <p class='pb-7 px-10 text-xl font-bold mb-1'>{findLyricsError}</p>
         {/if}
       {:else}
         <div class="p-10">
