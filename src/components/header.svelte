@@ -20,6 +20,13 @@
       location.reload() // TODO: temporary, should be fixed after resolving auth opening in other tab
     }
   }
+
+  const logOut = async () => {
+    const response = await $client.get(`/api/logout`)
+    if (response.ok) {
+      location.reload()
+    }
+  }
 </script>
 
 <nav class="bg-spotify-green">
@@ -33,8 +40,12 @@
       <div class="absolute inset-y-0 right-0 flex items-center sm:static sm:inset-auto sm:ml-6 sm:pr-0">
         <div class="ml-3 relative">
           <div>
-            {#if !loading && user == null}
-              <button class="bg-spotify-dark-green text-white px-3 py-2 rounded-md text-sm font-medium" on:click={logIn}>Log In</button>
+            {#if !loading}
+              {#if user}
+                <button class="bg-spotify-dark-green text-white px-3 py-2 rounded-md text-sm font-medium" on:click={logOut}>Log Out</button>
+              {:else}
+                <button class="bg-spotify-dark-green text-white px-3 py-2 rounded-md text-sm font-medium" on:click={logIn}>Log In</button>
+              {/if}
             {/if}
           </div>
         </div>

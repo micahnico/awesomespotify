@@ -28,6 +28,7 @@ func main() {
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/user/get", routes.GetUser)
 		r.Get("/login", routes.Login)
+		r.Get("/logout", routes.Logout)
 		r.Get("/callback", authenticate.CompleteAuth)
 		r.Get("/lyrics/find", routes.FindLyrics)
 	})
@@ -35,17 +36,6 @@ func main() {
 	log.Println("Server started on on port 8081")
 	http.ListenAndServe(":8081", r)
 }
-
-// func loadSpotifyClientHandler() func(http.Handler) http.Handler {
-// 	return func(next http.Handler) http.Handler {
-// 		fn := func(w http.ResponseWriter, r *http.Request) {
-// 			ctx := r.Context()
-// 			ctx = current.WithSpotifyClient(ctx)
-// 			next.ServeHTTP(w, r.WithContext(ctx))
-// 		}
-// 		return http.HandlerFunc(fn)
-// 	}
-// }
 
 func loadSpotifyClientHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {

@@ -9,6 +9,7 @@
   let song: string
   let lyrics: string
   let imageUrl: string
+  let bgHex: string
   let findLyricsError: string
 
   let user: any
@@ -27,6 +28,7 @@
         song = lyricResponse.body.Song
         lyrics = lyricResponse.body.Lyrics
         imageUrl = lyricResponse.body.ImageURL
+        bgHex = lyricResponse.body.BgHex
         findLyricsError = lyricResponse.body.Error
       }
     }
@@ -54,21 +56,28 @@
     width: 200px;
   }
 }
+
+  @media (min-width: 1536px) {
+    .custom-img-size {
+      height: 250px;
+      width: 250px;
+    }
+  }
 </style>
 
 <Header/>
 
 <div class="w-full flex justify-center p-5 bg-gray-100">
-  <div class='px-16 py-10 w-full lg:w-3/4 xl:w-3/5 2xl:w-1/2 bg-white rounded-md shadow-lg'>
+  <div class='w-full lg:w-3/4 xl:w-3/5 bg-white rounded-md shadow-lg'>
     {#if loading}
-      <p class='text-xl font-bold mb-1'>Finding Lyrics...</p>
+      <p class='p-10 text-xl font-bold mb-1'>Finding Lyrics...</p>
     {:else}
       {#if user}
         {#if !findLyricsError}
-          <div class="flex items-center mb-7">
-            <img src={imageUrl} alt="" class="border mb-3 custom-img-size">
+          <div class="flex items-center p-10 rounded-t-md mb-7" style="background-color: {bgHex};">
+            <img src={imageUrl} alt="" class="border custom-img-size">
             <div class="ml-5">
-              <p class='text-2xl sm:text-3xl md:text-4xl 2xl:text-5xl font-bold mb-1'>{song}</p>
+              <p class='text-2xl sm:text-3xl md:text-4xl font-bold mb-1'>{song}</p>
               <p class='text-xl md:text-2xl text-gray-500'>
                 {#each artists as artist, i}
                   {#if i}, {/if}{artist}
@@ -77,16 +86,20 @@
             </div>
           </div>
           {#if lyrics}
-            {@html lyrics}
-            <hr class="my-5">
-            <p>These lyrics were taken from <a href="https://genius.com" class="text-blue-500 hover:text-blue-700">genius.com</a></p>
+            <div class="pb-10 px-10">
+              {@html lyrics}
+              <hr class="my-5">
+              <p class="text-gray-500">These lyrics were taken from <a href="https://genius.com" class="text-blue-500 hover:text-blue-700">genius.com</a></p>
+            </div>
           {/if}
         {:else}
-          <p class='text-xl font-bold mb-1'>{findLyricsError}</p>
+          <p class='p-10 text-xl font-bold mb-1'>{findLyricsError}</p>
         {/if}
       {:else}
-        <p class='text-3xl font-bold mb-1'>Lyrics</p>
-        <p><span class="cursor-pointer link" on:click={logIn}>Log in with Spotify</span> to access</p>
+        <div class="p-10">
+          <p class='text-3xl font-bold mb-1'>Lyrics</p>
+          <p><span class="cursor-pointer link" on:click={logIn}>Log in with Spotify</span> to access</p>
+        </div>
       {/if}
     {/if}
   </div>

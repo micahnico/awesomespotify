@@ -32,6 +32,5 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	expiryToken := &http.Cookie{Name: "ExpiryToken", Value: token.Expiry.String(), HttpOnly: false, Expires: token.Expiry}
 	http.SetCookie(w, expiryToken)
 
-	// current.SetSpotifyClient(client)
 	render.JSON(w, r, loginResponse{Err: err})
 }
