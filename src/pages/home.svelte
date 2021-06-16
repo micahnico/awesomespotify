@@ -72,7 +72,7 @@
 <div class="w-full flex justify-center p-5 bg-gray-100">
   <div class='w-full lg:w-3/4 xl:w-3/5 bg-white rounded-md shadow-lg'>
     {#if loading}
-      <p class='p-10 text-xl font-bold mb-1'>Finding Lyrics...</p>
+      <p class='py-7 px-10 text-xl font-bold mb-1'>Finding Lyrics...</p>
     {:else}
       {#if user}
         {#if findLyricsError != "No currently playing song"}

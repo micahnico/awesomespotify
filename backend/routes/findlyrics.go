@@ -127,7 +127,7 @@ func scrape(ctx context.Context, url string) (string, error) {
 	var html string
 	document.Find(".dVtOne").Each(func(i int, s *goquery.Selection) {
 		section, _ := s.Html()
-		html += section
+		html += (section + "<br>")
 	})
 
 	return html, nil

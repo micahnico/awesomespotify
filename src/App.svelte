@@ -34,6 +34,10 @@
     color: #199c47;
   }
 
+  .text-spotify-green {
+    color: #1DB954;
+  }
+
   .bg-spotify-green {
     background: #1DB954;
   }
