@@ -46,8 +46,8 @@ func FindLyrics(w http.ResponseWriter, r *http.Request) {
 	currentArtists := getArtistNames(currentlyPlayingInfo.Item.Artists)
 	currentSong := currentlyPlayingInfo.Item.Name
 	albumImageURL := currentlyPlayingInfo.Item.Album.Images[1].URL // get the one that is 300x300
-	bgColor, bgColorHex, err := getMainColorFromAlbumnCover(ctx, albumImageURL)
-	textColor, err := getBestTextColor(bgColor)
+	mainColors, bgColorHex, err := getMainColorFromAlbumnCover(ctx, albumImageURL)
+	textColor, err := getBestTextColor(mainColors)
 	sadpath.Check(err)
 
 	lyrics, err := search(ctx, currentArtists, currentSong)
@@ -209,7 +209,7 @@ func getArtistNames(artists []spotify.SimpleArtist) []string {
 	return names
 }
 
-func getMainColorFromAlbumnCover(ctx context.Context, url string) (color.Color, string, error) {
+func getMainColorFromAlbumnCover(ctx context.Context, url string) ([]color.Color, string, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, "", err
@@ -229,11 +229,20 @@ func getMainColorFromAlbumnCover(ctx context.Context, url string) (color.Color, 
 		return nil, "", err
 	}
 
-	chosen := colors[0]
-	return color.RGBA{uint8(chosen.Color.R), uint8(chosen.Color.G), uint8(chosen.Color.B), 0xFF}, fmt.Sprintf("#%v", chosen.AsString()), nil
+	var colorsParsed []color.Color
+	for _, co := range colors {
+		colorsParsed = append(colorsParsed, color.RGBA{uint8(co.Color.R), uint8(co.Color.G), uint8(co.Color.B), 0xFF})
+	}
+
+	return colorsParsed, fmt.Sprintf("#%v", colors[0].AsString()), nil
 }
 
-func getBestTextColor(bgColor color.Color) (string, error) {
-	bestTextColor := colorhelper.PickBestTextColor(bgColor)
+func getBestTextColor(colors []color.Color) (string, error) {
+	var bestTextColor color.Color
+	if len(colors) > 0 {
+		bestTextColor = colorhelper.PickBestTextColor(colors[0], colors[1:]...)
+	} else {
+		bestTextColor = colorhelper.PickBestTextColor(colors[0])
+	}
 	return colorhelper.MakeColorRepresentation(bestTextColor, colorhelper.HashedHexadecimalTripletRepresentation), nil
 }
