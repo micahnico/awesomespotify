@@ -10,6 +10,7 @@
   let lyrics: string
   let imageUrl: string
   let bgHex: string
+  let txtHex: string
   let findLyricsError: string
 
   let user: any
@@ -29,6 +30,7 @@
         lyrics = lyricResponse.body.Lyrics
         imageUrl = lyricResponse.body.ImageURL
         bgHex = lyricResponse.body.BgHex
+        txtHex = lyricResponse.body.TxtHex
         findLyricsError = lyricResponse.body.Error
       }
     }
@@ -73,17 +75,21 @@
       <p class='p-10 text-xl font-bold mb-1'>Finding Lyrics...</p>
     {:else}
       {#if user}
-        <div class="flex items-center p-10 rounded-t-md mb-7" style="background-color: {bgHex};">
-          <img src={imageUrl} alt="" class="border custom-img-size">
-          <div class="ml-5">
-            <p class='text-2xl sm:text-3xl md:text-4xl font-bold mb-1'>{song}</p>
-            <p class='text-xl md:text-2xl text-gray-500'>
-              {#each artists as artist, i}
-                {#if i}, {/if}{artist}
-              {/each}
-            </p>
+        {#if findLyricsError != "No currently playing song"}
+          <div class="flex items-center p-10 rounded-t-md mb-7" style="background-color: {bgHex}; color: {txtHex};">
+            <img src={imageUrl} alt="" class="border custom-img-size">
+            <div class="ml-5">
+              <p class='text-2xl sm:text-3xl md:text-4xl font-bold mb-1'>{song}</p>
+              <p class='text-xl md:text-2xl'>
+                {#each artists as artist, i}
+                  {#if i}, {/if}{artist}
+                {/each}
+              </p>
+            </div>
           </div>
-        </div>
+        {:else}
+          <div class="mb-7"></div>
+        {/if}
         {#if lyrics}
           <div class="pb-10 px-10">
             {@html lyrics}

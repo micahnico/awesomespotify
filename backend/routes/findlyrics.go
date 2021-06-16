@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	"image/color"
 	"net/http"
 	"os"
 	"regexp"
@@ -15,6 +16,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/jackc/sadpath"
 	"github.com/micahnico/awesomespotify/backend/current"
+	"github.com/sorucoder/colorhelper"
 	"github.com/zmb3/spotify"
 )
 
@@ -24,6 +26,7 @@ type findLyricsResponse struct {
 	Lyrics   string
 	ImageURL string
 	BgHex    string
+	TxtHex   string
 	Error    string
 }
 
@@ -40,23 +43,23 @@ func FindLyrics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// searchArtist := currentlyPlayingInfo.Item.Artists[0].Name // searching for the first/main artist should give the right result
 	currentArtists := getArtistNames(currentlyPlayingInfo.Item.Artists)
 	currentSong := currentlyPlayingInfo.Item.Name
 	albumImageURL := currentlyPlayingInfo.Item.Album.Images[1].URL // get the one that is 300x300
-	bgColorHex, err := getMainColorFromAlbumnCover(ctx, albumImageURL)
+	bgColor, bgColorHex, err := getMainColorFromAlbumnCover(ctx, albumImageURL)
+	textColor, err := getBestTextColor(bgColor)
 	sadpath.Check(err)
 
 	lyrics, err := search(ctx, currentArtists, currentSong)
 	sadpath.Check(err)
 
 	if lyrics == "" {
-		result := findLyricsResponse{Artists: currentArtists, Song: currentSong, ImageURL: albumImageURL, BgHex: bgColorHex, Error: "No lyrics found"}
+		result := findLyricsResponse{Artists: currentArtists, Song: currentSong, ImageURL: albumImageURL, BgHex: bgColorHex, TxtHex: textColor, Error: "No lyrics found"}
 		render.JSON(w, r, result)
 		return
 	}
 
-	result := findLyricsResponse{Artists: currentArtists, Song: currentSong, Lyrics: lyrics, ImageURL: albumImageURL, BgHex: bgColorHex}
+	result := findLyricsResponse{Artists: currentArtists, Song: currentSong, Lyrics: lyrics, ImageURL: albumImageURL, BgHex: bgColorHex, TxtHex: textColor}
 	render.JSON(w, r, result)
 }
 
@@ -84,7 +87,6 @@ func search(ctx context.Context, artists []string, song string) (string, error) 
 	var url string
 	for _, hit := range hits {
 		result := hit.(map[string]interface{})["result"].(map[string]interface{})
-		// fmt.Println(formatSongName(removeRemixString(result["title"].(string))), "|", formatSongName(removeRemixString(song)))
 		if formatSongName(removeRemixString(result["title"].(string))) == formatSongName(removeRemixString(song)) {
 			url = result["url"].(string)
 			break
@@ -207,16 +209,16 @@ func getArtistNames(artists []spotify.SimpleArtist) []string {
 	return names
 }
 
-func getMainColorFromAlbumnCover(ctx context.Context, url string) (string, error) {
+func getMainColorFromAlbumnCover(ctx context.Context, url string) (color.Color, string, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
 	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:48.0) Gecko/20100101 Firefox/48.0")
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 	defer res.Body.Close()
 
@@ -224,8 +226,14 @@ func getMainColorFromAlbumnCover(ctx context.Context, url string) (string, error
 	colors, err := prominentcolor.Kmeans(img)
 
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
-	return ("#" + colors[0].AsString()), nil
+	chosen := colors[0]
+	return color.RGBA{uint8(chosen.Color.R), uint8(chosen.Color.G), uint8(chosen.Color.B), 0xFF}, fmt.Sprintf("#%v", chosen.AsString()), nil
+}
+
+func getBestTextColor(bgColor color.Color) (string, error) {
+	bestTextColor := colorhelper.PickBestTextColor(bgColor)
+	return colorhelper.MakeColorRepresentation(bestTextColor, colorhelper.HashedHexadecimalTripletRepresentation), nil
 }
