@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -54,12 +53,11 @@ func loadSpotifyClientHandler() func(http.Handler) http.Handler {
 
 			// same browsing session
 			if accessToken != nil && refreshToken != nil && current.SpotifyClient(ctx) != nil {
-				fmt.Println("client was set")
 				token, _ := current.SpotifyClient(ctx).Token()
 				authenticate.SetCookies(w, token)
 			}
 
-			// been less than an hour since last use
+			// been less than an hour since last use, but different browsing session
 			if accessToken != nil && refreshToken != nil && current.SpotifyClient(ctx) == nil {
 				currToken := &oauth2.Token{
 					AccessToken:  accessToken.Value,
