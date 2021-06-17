@@ -17,7 +17,8 @@ var auth spotify.Authenticator
 func StartConnectAccount(redirectURI string, clientID string, secretKey string) (string, error) {
 	auth = spotify.NewAuthenticator(redirectURI, spotify.ScopeUserReadCurrentlyPlaying)
 	auth.SetAuthInfo(clientID, secretKey)
-	url := auth.AuthURLWithDialog(state)
+	url := auth.AuthURL(state)
+	// url := auth.AuthURLWithDialog(state)
 
 	return url, nil
 }
@@ -54,7 +55,6 @@ func randStringRunes(n int) string {
 }
 
 func SetCookies(w http.ResponseWriter, token *oauth2.Token) {
-	// spotify's access tokens expire in an hour
 	accessTokenCookie := &http.Cookie{Name: "AccessToken", Value: token.AccessToken, Path: "/", HttpOnly: false, Expires: time.Now().Add(time.Hour)}
 	http.SetCookie(w, accessTokenCookie)
 	refreshTokenCookie := &http.Cookie{Name: "RefreshToken", Value: token.RefreshToken, Path: "/", HttpOnly: false, Expires: time.Now().Add(time.Hour)}
