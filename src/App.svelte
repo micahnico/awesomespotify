@@ -10,20 +10,25 @@
 
   const routes = {
     '/': wrap({asyncComponent: () => import('./pages/home.svelte')}),
-    '/testpage': wrap({asyncComponent: () => import('./pages/testpage.svelte')}),
     '*': wrap({asyncComponent: () => import('./pages/not_found.svelte')}),
   }
 
 </script>
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
 
 <style global lang="postcss">
   @tailwind base;
   @tailwind components;
   @tailwind utilities;
 
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
   * {
     font-family: 'Montserrat', sans-serif;
+  }
+
+  .header-text {
+    font-family: 'Pacifico', cursive;
   }
 
   .link {

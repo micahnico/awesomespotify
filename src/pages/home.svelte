@@ -47,64 +47,91 @@
 </script>
 
 <style>
-  .custom-img-size {
-    height: 150px;
-    width: 150px;
+  @keyframes rotation {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(359deg);
+    }
+  }
+  .rotate {
+    animation: rotation 5s infinite linear;
   }
 
-  @media (min-width: 1280px) {
   .custom-img-size {
     height: 200px;
     width: 200px;
   }
-}
 
-  @media (min-width: 1536px) {
+  .currently-playing-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 640px) {
     .custom-img-size {
       height: 250px;
       width: 250px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .currently-playing-info {
+      flex-direction: row;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .custom-img-size {
+      height: 300px;
+      width: 300px;
     }
   }
 </style>
 
 <Header/>
 
-<div class="w-full flex justify-center p-5 bg-gray-100">
-  <div class='w-full lg:w-3/4 xl:w-3/5 bg-white rounded-md shadow-lg'>
-    {#if loading}
-      <p class='py-7 px-10 text-xl font-bold mb-1'>Finding Lyrics...</p>
-    {:else}
-      {#if user}
-        {#if findLyricsError != "No currently playing song"}
-          <div class="flex items-center p-10 rounded-t-md mb-7" style="background-color: {bgHex}; color: {txtHex};">
-            <img src={imageUrl} alt="" class="border custom-img-size">
-            <div class="ml-5">
-              <p class='text-2xl sm:text-3xl md:text-4xl font-bold mb-1'>{song}</p>
-              <p class='text-xl md:text-2xl'>
-                {#each artists as artist, i}
-                  {#if i}, {/if}{artist}
-                {/each}
-              </p>
-            </div>
+<div class="min-h-screen" style="background: #111111;">
+  <div class="w-full flex justify-center p-5">
+    <div class='w-full lg:w-3/4 xl:w-3/5 bg-white shadow-lg'>
+      {#if loading}
+        <div class="currently-playing-info items-center p-10 bg-spotify-green" style="color: #111111;">
+          <img src="vinyl.png" alt="" class="custom-img-size rotate">
+          <div class="mt-5 xl:mt-0 xl:ml-5">
+            <p class='text-2xl sm:text-3xl md:text-4xl font-bold mb-1'>Finding Lyrics...</p>
           </div>
-        {:else}
-          <div class="mb-7"></div>
-        {/if}
-        {#if lyrics}
-          <div class="pb-10 px-10">
-            {@html lyrics}
-            <hr class="my-5">
-            <p class="text-gray-500">These lyrics were taken from <a href="https://genius.com" class="text-blue-500 hover:text-blue-700">genius.com</a></p>
-          </div>
-        {:else}
-          <p class='pb-7 px-10 text-xl font-bold mb-1'>{findLyricsError}</p>
-        {/if}
-      {:else}
-        <div class="p-10">
-          <p class='text-3xl font-bold mb-1'>Lyrics</p>
-          <p><span class="cursor-pointer link" on:click={logIn}>Log in with Spotify</span> to access</p>
         </div>
+      {:else}
+        {#if user}
+          {#if findLyricsError != "No currently playing song"}
+            <div class="currently-playing-info items-center p-10" style="background: {bgHex}; color: {txtHex};">
+              <img src={imageUrl} alt="" class="border custom-img-size">
+              <div class="mt-5 xl:mt-0 xl:ml-5">
+                <p class='text-2xl sm:text-3xl md:text-4xl font-bold mb-1'>{song}</p>
+                <p class='text-xl md:text-2xl'>
+                  {#each artists as artist, i}
+                    {#if i}, {/if}{artist}
+                  {/each}
+                </p>
+              </div>
+            </div>
+          {/if}
+          {#if lyrics}
+            <div class="pt-7 pb-10 px-10 text-white" style="background: #212020;">
+              {@html lyrics}
+              <p class="text-gray-500 mt-7">These lyrics were taken from <a href="https://genius.com" class="text-blue-500 hover:text-blue-700">genius.com</a></p>
+            </div>
+          {:else}
+            <p class='py-7 px-10 text-xl font-bold text-white' style="background: #212020;">{findLyricsError} 🙁</p>
+          {/if}
+        {:else}
+          <div class="p-10 text-white" style="background: #212020;">
+            <p class='text-3xl font-bold mb-1'>Find Lyrics</p>
+            <p><span class="cursor-pointer link" on:click={logIn}>Log in with Spotify</span> to access</p>
+          </div>
+        {/if}
       {/if}
-    {/if}
+    </div>
   </div>
 </div>
