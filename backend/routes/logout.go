@@ -11,12 +11,10 @@ type logoutResponse struct {
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	accessTokenCookie := &http.Cookie{Name: "AccessToken", MaxAge: -1}
+	accessTokenCookie := &http.Cookie{Name: "AccessToken", MaxAge: -1, Path: "/"}
 	http.SetCookie(w, accessTokenCookie)
-	refreshTokenCookie := &http.Cookie{Name: "RefreshToken", MaxAge: -1}
+	refreshTokenCookie := &http.Cookie{Name: "RefreshToken", MaxAge: -1, Path: "/"}
 	http.SetCookie(w, refreshTokenCookie)
-	expiryToken := &http.Cookie{Name: "ExpiryToken", MaxAge: -1}
-	http.SetCookie(w, expiryToken)
 
 	render.JSON(w, r, logoutResponse{Status: 200})
 }

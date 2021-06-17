@@ -41,7 +41,7 @@
   const logIn = async () => {
     const response = await $client.get(`/api/login`)
     if (response.ok) {
-      location.reload() // TODO: temporary, should be fixed after resolving auth opening in other tab
+      location.href = response.body.url
     }
   }
 </script>

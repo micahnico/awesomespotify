@@ -1,34 +1,25 @@
 package authenticate
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
-	"os/exec"
-	"runtime"
 	"time"
 
+	"github.com/jackc/sadpath"
 	"github.com/zmb3/spotify"
+	"golang.org/x/oauth2"
 )
 
-var (
-	ch    = make(chan *spotify.Client)
-	state = randStringRunes(42)
-)
+var state = randStringRunes(42)
 var auth spotify.Authenticator
 
-func ConnectAccount(redirectURI string, clientID string, secretKey string) (*spotify.Client, error) {
-	auth = spotify.NewAuthenticator(redirectURI, spotify.ScopePlaylistReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistModifyPublic, spotify.ScopePlaylistReadCollaborative, spotify.ScopeUserTopRead, spotify.ScopeUserLibraryRead, spotify.ScopeUserFollowRead, spotify.ScopeUserLibraryRead, spotify.ScopeUserReadCurrentlyPlaying)
+func StartConnectAccount(redirectURI string, clientID string, secretKey string) (string, error) {
+	auth = spotify.NewAuthenticator(redirectURI, spotify.ScopeUserReadCurrentlyPlaying)
 	auth.SetAuthInfo(clientID, secretKey)
+	url := auth.AuthURLWithDialog(state)
 
-	url := auth.AuthURL(state)
-	openBrowser(url)
-
-	// wait for auth to complete
-	client := <-ch
-
-	return client, nil
+	return url, nil
 }
 
 func CompleteAuth(w http.ResponseWriter, r *http.Request) {
@@ -43,26 +34,12 @@ func CompleteAuth(w http.ResponseWriter, r *http.Request) {
 	}
 	// use the token to get an authenticated client
 	client := auth.NewClient(tok)
-	fmt.Fprintf(w, "Login Completed!")
-	ch <- &client
-}
 
-func openBrowser(url string) error {
-	var err error
-	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
-	case "darwin":
-		err = exec.Command("open", url).Start()
-	default:
-		err = fmt.Errorf("unsupported platform")
-	}
-	if err != nil {
-		return err
-	}
-	return nil
+	token, err := client.Token()
+	sadpath.Check(err)
+	SetCookies(w, token)
+
+	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
 }
 
 func randStringRunes(n int) string {
@@ -74,4 +51,12 @@ func randStringRunes(n int) string {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
 	return string(b)
+}
+
+func SetCookies(w http.ResponseWriter, token *oauth2.Token) {
+	// spotify's access tokens expire in an hour
+	accessTokenCookie := &http.Cookie{Name: "AccessToken", Value: token.AccessToken, Path: "/", HttpOnly: false, Expires: time.Now().Add(time.Hour)}
+	http.SetCookie(w, accessTokenCookie)
+	refreshTokenCookie := &http.Cookie{Name: "RefreshToken", Value: token.RefreshToken, Path: "/", HttpOnly: false, Expires: time.Now().Add(time.Hour)}
+	http.SetCookie(w, refreshTokenCookie)
 }

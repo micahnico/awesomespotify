@@ -16,6 +16,12 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+var (
+	clientID     = os.Getenv("CLIENT_ID")
+	clientSecret = os.Getenv("CLIENT_SECRET")
+	redirectURI  = os.Getenv("REDIRECT_URI")
+)
+
 func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -42,25 +48,19 @@ func loadSpotifyClientHandler() func(http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
-			expiry, err := r.Cookie("ExpiryToken")
-			if err == nil {
-				accessToken, _ := r.Cookie("AccessToken")
-				refreshToken, _ := r.Cookie("RefreshToken")
-
-				token := &oauth2.Token{
-					Expiry:       expiry.Expires,
-					TokenType:    "Bearer",
+			accessToken, _ := r.Cookie("AccessToken")
+			refreshToken, _ := r.Cookie("RefreshToken")
+			if accessToken != nil && refreshToken != nil {
+				currToken := &oauth2.Token{
 					AccessToken:  accessToken.Value,
 					RefreshToken: refreshToken.Value,
 				}
 
-				clientID := os.Getenv("CLIENT_ID")
-				clientSecret := os.Getenv("CLIENT_SECRET")
-				redirectURI := os.Getenv("REDIRECT_URI")
-
-				auth := spotify.NewAuthenticator(redirectURI, spotify.ScopePlaylistReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistModifyPublic, spotify.ScopePlaylistReadCollaborative, spotify.ScopeUserTopRead, spotify.ScopeUserLibraryRead, spotify.ScopeUserFollowRead, spotify.ScopeUserLibraryRead, spotify.ScopeUserReadCurrentlyPlaying)
+				auth := spotify.NewAuthenticator(redirectURI, spotify.ScopeUserReadCurrentlyPlaying)
 				auth.SetAuthInfo(clientID, clientSecret)
-				client := auth.NewClient(token)
+				client := auth.NewClient(currToken)
+				newToken, _ := client.Token()
+				authenticate.SetCookies(w, newToken)
 
 				ctx = current.WithSpotifyClient(ctx, &client)
 			}
