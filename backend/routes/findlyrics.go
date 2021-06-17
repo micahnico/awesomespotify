@@ -21,13 +21,14 @@ import (
 )
 
 type findLyricsResponse struct {
-	Artists  []string
-	Song     string
-	Lyrics   string
-	ImageURL string
-	BgHex    string
-	TxtHex   string
-	Error    string
+	Artists     []string
+	Song        string
+	URLSafeSong string
+	Lyrics      string
+	ImageURL    string
+	BgHex       string
+	TxtHex      string
+	Error       string
 }
 
 func FindLyrics(w http.ResponseWriter, r *http.Request) {
@@ -43,8 +44,17 @@ func FindLyrics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	currentSong := r.URL.Query().Get("currentSong")
+	if formatSongName(removeRemixString(currentlyPlayingInfo.Item.Name)) == currentSong {
+		result := findLyricsResponse{Error: "Already fetched lyrics"}
+		render.JSON(w, r, result)
+		return
+	}
+
+	fmt.Println("song changed")
+
+	currentSong = currentlyPlayingInfo.Item.Name
 	currentArtists := getArtistNames(currentlyPlayingInfo.Item.Artists)
-	currentSong := currentlyPlayingInfo.Item.Name
 	albumImageURL := currentlyPlayingInfo.Item.Album.Images[1].URL // get the one that is 300x300
 	mainColors, bgColorHex, err := getMainColorFromAlbumnCover(ctx, albumImageURL)
 	textColor, err := getBestTextColor(mainColors)
@@ -54,12 +64,12 @@ func FindLyrics(w http.ResponseWriter, r *http.Request) {
 	sadpath.Check(err)
 
 	if lyrics == "" {
-		result := findLyricsResponse{Artists: currentArtists, Song: currentSong, ImageURL: albumImageURL, BgHex: bgColorHex, TxtHex: textColor, Error: "No lyrics found"}
+		result := findLyricsResponse{Artists: currentArtists, Song: currentSong, URLSafeSong: formatSongName(removeRemixString(currentSong)), ImageURL: albumImageURL, BgHex: bgColorHex, TxtHex: textColor, Error: "No lyrics found"}
 		render.JSON(w, r, result)
 		return
 	}
 
-	result := findLyricsResponse{Artists: currentArtists, Song: currentSong, Lyrics: lyrics, ImageURL: albumImageURL, BgHex: bgColorHex, TxtHex: textColor}
+	result := findLyricsResponse{Artists: currentArtists, Song: currentSong, URLSafeSong: formatSongName(removeRemixString(currentSong)), Lyrics: lyrics, ImageURL: albumImageURL, BgHex: bgColorHex, TxtHex: textColor}
 	render.JSON(w, r, result)
 }
 

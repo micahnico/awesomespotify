@@ -1,12 +1,13 @@
 <script>
   import Header from '../components/header.svelte'
   import {link} from 'svelte-spa-router'
-  import { getContext, onMount } from 'svelte'
+  import { getContext, onDestroy, onMount } from 'svelte'
 
   const client: any = getContext('client')
 
   let artists: string
   let song: string
+  let urlSafeSong: string
   let lyrics: string
   let imageUrl: string
   let bgHex: string
@@ -15,6 +16,7 @@
 
   let user: any
   let loading: boolean = true
+  let lookupInterval: any
 
   onMount(async () => {
     const userResponse = await $client.get(`/api/user/get`)
@@ -27,6 +29,7 @@
       if (lyricResponse.ok) {
         artists = lyricResponse.body.Artists
         song = lyricResponse.body.Song
+        urlSafeSong = lyricResponse.body.URLSafeSong || ""
         lyrics = lyricResponse.body.Lyrics
         imageUrl = lyricResponse.body.ImageURL
         bgHex = lyricResponse.body.BgHex
@@ -35,13 +38,34 @@
       }
     }
 
+    lookupInterval = setInterval(autoDetectNewSong, 5000)
     loading = false
+  })
+
+  onDestroy(() => {
+    clearInterval(lookupInterval)
   })
 
   const logIn = async () => {
     const response = await $client.get(`/api/login`)
     if (response.ok) {
       location.href = response.body.url
+    }
+  }
+
+  const autoDetectNewSong = async () => {
+    if (!loading && user && !document.hidden) {
+      const lyricResponse = await $client.get(`/api/lyrics/find?currentSong=${urlSafeSong.replace(" ", "%20")}`)
+      if (lyricResponse.ok && lyricResponse.body.Error != "Already fetched lyrics") {
+        artists = lyricResponse.body.Artists
+        song = lyricResponse.body.Song
+        urlSafeSong = lyricResponse.body.URLSafeSong || ""
+        lyrics = lyricResponse.body.Lyrics
+        imageUrl = lyricResponse.body.ImageURL
+        bgHex = lyricResponse.body.BgHex
+        txtHex = lyricResponse.body.TxtHex
+        findLyricsError = lyricResponse.body.Error
+      }
     }
   }
 </script>
