@@ -63,9 +63,7 @@ func loadSpotifyClientHandler() func(http.Handler) http.Handler {
 				newToken, _ := client.Token()
 				authenticate.SetCookies(w, newToken)
 
-				if current.SpotifyClient(ctx) == nil {
-					current.SetSpotifyClient(&client)
-				}
+				ctx = current.WithSpotifyClient(ctx, &client)
 			}
 
 			next.ServeHTTP(w, r.WithContext(ctx))
