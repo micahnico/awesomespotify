@@ -1,5 +1,5 @@
-import proxy from 'http2-proxy'
-import finalhandler from 'finalhandler'
+const proxy = require('http2-proxy');
+const finalhandler = require('finalhandler')
 
 const defaultWebHandler = (err, req, res) => {
   if (err) {
@@ -17,21 +17,14 @@ const proxyHandler = (req, res) => {
 }
 
 /** @type {import("snowpack").SnowpackUserConfig } */
-export default {
+module.exports = {
   mount: {
-    public: {url: '/', static: true},
-    src: {url: '/dist'},
+    public: '/',
+    src: '/dist',
   },
   plugins: [
     '@snowpack/plugin-svelte',
     '@snowpack/plugin-dotenv',
-    [
-      '@snowpack/plugin-typescript',
-      {
-        /* Yarn PnP workaround: see https://www.npmjs.com/package/@snowpack/plugin-typescript */
-        ...(process.versions.pnp ? {tsc: 'yarn pnpify tsc'} : {}),
-      },
-    ],
   ],
   routes: [
     {
@@ -50,6 +43,7 @@ export default {
     /* ... */
   },
   buildOptions: {
-    /* ... */
+    out: (process.env.SNOWPACK_BUILD_DIR || 'build'),
+    baseUrl: "/",
   },
 };

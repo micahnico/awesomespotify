@@ -1,4 +1,4 @@
-<script lang='typescript'>
+<script>
 	import {onMount, setContext} from 'svelte'
   import { writable } from 'svelte/store'
   import Router from 'svelte-spa-router'

@@ -1,10 +1,10 @@
 <script>
   import { getContext, onMount } from 'svelte'
 
-  const client: any = getContext('client')
+  const client = getContext('client')
 
-  let user: any
-  let loading: boolean = true
+  let user
+  let loading = true
 
   onMount(async () => {
     const response = await $client.get(`/api/user/get`)

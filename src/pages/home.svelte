@@ -3,20 +3,20 @@
   import {link} from 'svelte-spa-router'
   import { getContext, onDestroy, onMount } from 'svelte'
 
-  const client: any = getContext('client')
+  const client = getContext('client')
 
-  let artists: string
-  let song: string
-  let urlSafeSong: string
-  let lyrics: string
-  let imageUrl: string
-  let bgHex: string
-  let txtHex: string
-  let findLyricsError: string
+  let artists
+  let song
+  let urlSafeSong
+  let lyrics
+  let imageUrl
+  let bgHex
+  let txtHex
+  let findLyricsError
 
-  let user: any
-  let loading: boolean = true
-  let lookupInterval: any
+  let user
+  let loading = true
+  let lookupInterval
 
   onMount(async () => {
     const userResponse = await $client.get(`/api/user/get`)
