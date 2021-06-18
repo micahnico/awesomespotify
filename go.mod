@@ -4,9 +4,11 @@ go 1.16
 
 require (
 	github.com/EdlinOrg/prominentcolor v1.0.0 // indirect
-	github.com/PuerkitoBio/goquery v1.4.1 // indirect
+	github.com/PuerkitoBio/goquery v1.5.1 // indirect
 	github.com/go-chi/chi/v5 v5.0.3 // indirect
 	github.com/go-chi/render v1.0.1 // indirect
+	github.com/gocolly/colly v1.2.0 // indirect
+	github.com/gocolly/colly/v2 v2.1.0 // indirect
 	github.com/jackc/sadpath v0.0.0-20200206030839-ea689d553359 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect

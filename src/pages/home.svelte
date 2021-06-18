@@ -56,7 +56,7 @@
   const autoDetectNewSong = async () => {
     if (!loading && user && !document.hidden) {
       const lyricResponse = await $client.get(`/api/lyrics/find?currentSong=${urlSafeSong.replace(" ", "%20")}`)
-      if (lyricResponse.ok && lyricResponse.body.Error != "Already fetched lyrics") {
+      if (lyricResponse.ok && lyricResponse.body.Error != "Already fetched lyrics" && lyricResponse.body.Error != "No currently playing song") {
         artists = lyricResponse.body.Artists
         song = lyricResponse.body.Song
         urlSafeSong = lyricResponse.body.URLSafeSong || ""

@@ -51,14 +51,7 @@ func loadSpotifyClientHandler() func(http.Handler) http.Handler {
 			accessToken, _ := r.Cookie("AccessToken")
 			refreshToken, _ := r.Cookie("RefreshToken")
 
-			// same browsing session
-			if accessToken != nil && refreshToken != nil && current.SpotifyClient(ctx) != nil {
-				token, _ := current.SpotifyClient(ctx).Token()
-				authenticate.SetCookies(w, token)
-			}
-
-			// been less than an hour since last use, but different browsing session
-			if accessToken != nil && refreshToken != nil && current.SpotifyClient(ctx) == nil {
+			if accessToken != nil && refreshToken != nil {
 				currToken := &oauth2.Token{
 					AccessToken:  accessToken.Value,
 					RefreshToken: refreshToken.Value,
@@ -70,7 +63,9 @@ func loadSpotifyClientHandler() func(http.Handler) http.Handler {
 				newToken, _ := client.Token()
 				authenticate.SetCookies(w, newToken)
 
-				current.SetSpotifyClient(&client)
+				if current.SpotifyClient(ctx) == nil {
+					current.SetSpotifyClient(&client)
+				}
 			}
 
 			next.ServeHTTP(w, r.WithContext(ctx))

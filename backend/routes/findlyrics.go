@@ -51,7 +51,7 @@ func FindLyrics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("song changed")
+	fmt.Println("new song")
 
 	currentSong = currentlyPlayingInfo.Item.Name
 	currentArtists := getArtistNames(currentlyPlayingInfo.Item.Artists)
@@ -121,8 +121,8 @@ func scrape(ctx context.Context, url string) (string, error) {
 		return "", err
 	}
 
-	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:48.0) Gecko/20100101 Firefox/48.0")
-	res, err := http.DefaultClient.Do(req)
+	client := &http.Client{}
+	res, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -135,7 +135,7 @@ func scrape(ctx context.Context, url string) (string, error) {
 	}
 
 	var html string
-	document.Find(".dVtOne").Each(func(i int, s *goquery.Selection) {
+	document.Find("[data-scrolltrigger-pin=true]").Each(func(i int, s *goquery.Selection) {
 		section, _ := s.Html()
 		html += (section + "<br>")
 	})
