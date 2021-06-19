@@ -31,12 +31,12 @@ func main() {
 	r.Use(middleware.Timeout(60 * time.Second))
 	r.Use(loadSpotifyClientHandler())
 
-	r.Route("/api", func(r chi.Router) {
+	r.Route("/lyrics/api", func(r chi.Router) {
 		r.Get("/user/get", routes.GetUser)
 		r.Get("/login", routes.Login)
 		r.Get("/logout", routes.Logout)
 		r.Get("/callback", authenticate.CompleteAuth)
-		r.Get("/lyrics/find", routes.FindLyrics)
+		r.Get("/find", routes.FindLyrics)
 	})
 
 	log.Println("Server started on on port 8081")
