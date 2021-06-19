@@ -33,7 +33,6 @@ module.exports = {
     }
   ],
   optimize: {
-    /* Example: Bundle your final build: */
     // "bundle": true,
   },
   packageOptions: {
@@ -43,7 +42,5 @@ module.exports = {
     /* ... */
   },
   buildOptions: {
-    out: (process.env.SNOWPACK_BUILD_DIR || 'build'),
-    baseUrl: "/",
   },
 };

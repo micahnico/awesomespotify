@@ -31,7 +31,7 @@ func main() {
 	r.Use(middleware.Timeout(60 * time.Second))
 	r.Use(loadSpotifyClientHandler())
 
-	r.Route("/lyrics/api", func(r chi.Router) {
+	r.Route("/api", func(r chi.Router) {
 		r.Get("/user/get", routes.GetUser)
 		r.Get("/login", routes.Login)
 		r.Get("/logout", routes.Logout)
