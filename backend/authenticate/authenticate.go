@@ -15,7 +15,7 @@ var state = randStringRunes(42)
 var auth spotify.Authenticator
 
 func StartConnectAccount(redirectURI string, clientID string, secretKey string) (string, error) {
-	auth = spotify.NewAuthenticator(redirectURI, spotify.ScopeUserReadCurrentlyPlaying)
+	auth = spotify.NewAuthenticator(redirectURI, spotify.ScopeUserReadCurrentlyPlaying, spotify.ScopePlaylistReadCollaborative, spotify.ScopePlaylistReadPrivate, spotify.ScopePlaylistModifyPublic, spotify.ScopePlaylistModifyPrivate)
 	auth.SetAuthInfo(clientID, secretKey)
 	url := auth.AuthURL(state)
 	// url := auth.AuthURLWithDialog(state)

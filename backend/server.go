@@ -33,10 +33,12 @@ func main() {
 
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/user/get", routes.GetUser)
-		r.Get("/login", routes.Login)
-		r.Get("/logout", routes.Logout)
+		r.Post("/login", routes.Login)
+		r.Post("/logout", routes.Logout)
 		r.Get("/callback", authenticate.CompleteAuth)
 		r.Get("/find", routes.FindLyrics)
+		r.Get("/playlists/get", routes.GetPlaylists)
+		r.Post("/playlists/create", routes.CreatePlaylist)
 	})
 
 	log.Println("Server started on on port 8081")
@@ -57,7 +59,7 @@ func loadSpotifyClientHandler() func(http.Handler) http.Handler {
 					RefreshToken: refreshToken.Value,
 				}
 
-				auth := spotify.NewAuthenticator(redirectURI, spotify.ScopeUserReadCurrentlyPlaying)
+				auth := spotify.NewAuthenticator(redirectURI, spotify.ScopeUserReadCurrentlyPlaying, spotify.ScopePlaylistReadCollaborative, spotify.ScopePlaylistReadPrivate, spotify.ScopePlaylistModifyPublic, spotify.ScopePlaylistModifyPrivate)
 				auth.SetAuthInfo(clientID, clientSecret)
 				client := auth.NewClient(currToken)
 				newToken, _ := client.Token()

@@ -15,22 +15,22 @@
   })
 
   const logIn = async () => {
-    const response = await $client.get(`/api/login`)
+    const response = await $client.post(`/api/login`)
     if (response.ok) {
       location.href = response.body.url
     }
   }
 
   const logOut = async () => {
-    const response = await $client.get(`/api/logout`)
+    const response = await $client.post(`/api/logout`)
     if (response.ok) {
       location.reload()
     }
   }
 </script>
 
-<div class="w-full flex justify-center pt-10 pb-5 px-6" style="background-color: #111111;">
-  <div class='w-full flex justify-between lg:w-3/4 xl:w-3/5'>
+<div class="w-full flex justify-center pt-10 pb-5 px-10" style="background-color: #111111;">
+  <div class='w-full flex justify-between w-full'>
     <p class="text-spotify-green text-2xl md:text-4xl font-bold header-text">Awesome Spotify</p>
     <div>
       {#if !loading}

@@ -11,6 +11,7 @@ require (
 	github.com/gocolly/colly/v2 v2.1.0 // indirect
 	github.com/jackc/sadpath v0.0.0-20200206030839-ea689d553359 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/micahnico/autoplaylist v0.0.0-20210530043005-947c6e2ebeb1 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/oliamb/cutter v0.2.2 // indirect
 	github.com/pkg/browser v0.0.0-20210606212950-a7b7a6107d32 // indirect
