@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/EdlinOrg/prominentcolor"
-	"github.com/PuerkitoBio/goquery"
 	"github.com/go-chi/render"
+	"github.com/gocolly/colly/v2"
 	"github.com/jackc/sadpath"
 	"github.com/micahnico/awesomespotify/backend/current"
 	"github.com/sorucoder/colorhelper"
@@ -51,8 +51,6 @@ func FindLyrics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("new song")
-
 	currentSong = currentlyPlayingInfo.Item.Name
 	currentArtists := getArtistNames(currentlyPlayingInfo.Item.Artists)
 	albumImageURL := currentlyPlayingInfo.Item.Album.Images[1].URL // get the one that is 300x300
@@ -79,8 +77,9 @@ func search(ctx context.Context, artists []string, song string) (string, error) 
 		return "", err
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", os.Getenv("GENIUS_API_ACCESS_TOKEN")))
-	res, err := http.DefaultClient.Do(req)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", os.Getenv("GENIUS_API_ACCESS_TOKEN")))
+	client := &http.Client{}
+	res, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -107,7 +106,7 @@ func search(ctx context.Context, artists []string, song string) (string, error) 
 		return "", nil // no lyrics found
 	}
 
-	html, err := scrape(ctx, url)
+	html := scrape(url)
 	if err != nil {
 		return "", err
 	}
@@ -115,32 +114,17 @@ func search(ctx context.Context, artists []string, song string) (string, error) 
 	return html, nil
 }
 
-func scrape(ctx context.Context, url string) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return "", err
-	}
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-
-	// Create a goquery document from the HTTP response
-	document, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		return "", err
-	}
-
+func scrape(url string) string {
 	var html string
-	document.Find("[data-scrolltrigger-pin=true]").Each(func(i int, s *goquery.Selection) {
-		section, _ := s.Html()
+
+	c := colly.NewCollector()
+	c.OnHTML("div[class^='Lyrics__Container']", func(e *colly.HTMLElement) {
+		section, _ := e.DOM.Html()
 		html += (section + "<br>")
 	})
+	c.Visit(url)
 
-	return html, nil
+	return html
 }
 
 func formatURL(artists []string, song string) string {
