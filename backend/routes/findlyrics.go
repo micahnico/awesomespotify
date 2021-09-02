@@ -124,6 +124,10 @@ func scrape(url string) string {
 	})
 	c.Visit(url)
 
+	// remove all anchor tags, but keep the lyrics inside
+	re := regexp.MustCompile(`<a[^>]+href=\"(.*?)\"[^>]*>(.*?)<\/a>`)
+	html = re.ReplaceAllString(html, "$2") // $2 is the second capture group
+
 	return html
 }
 
